@@ -11,31 +11,38 @@
 
   var T = {                       // layout tokens (all in canvas pixels)
     marginX: 96,
-    titleTop: 150,
-    titleMaxSize: 168,
-    titleMinSize: 56,
-    titleFill: 0.82,          // share of the usable width a title aims to fill
-    headerNoteSize: 27,
+    titleTop: 120,
+    titleMaxSize: 156,
+    titleMinSize: 64,
+    titleMaxLines: 2,         // the title stacks like SUNSET / BEACH RUN
+    titleLead: 0.88,          // line height of the stacked title, in ems
+    titleGap: 64,             // clear space under the title
+    headerNoteSize: 32,
+    headerNoteGap: 42,
     dayX: 100,
     colX: 262,
     rightX: 984,
     daySize: 88,
-    nameSize: 34,
+    nameSize: 46,
     metaSize: 32,
-    noteSize: 26,
-    dateSize: 30,
-    lineGap: 40,
-    noteGap: 34,
-    rowGapMin: 64,
-    rowGapMax: 190,
+    noteSize: 30,
+    dateSize: 36,
+    rowTextTop: 40,           // first text baseline, measured from the row top
+    nameGap: 52,
+    lineGap: 42,
+    noteGap: 36,
+    rowGapTight: 32,          // the closest two rows are ever set
+    rowGapMax: 180,
+    rowMinScale: 0.68,        // how far the row text may shrink for a full week
     footerBottom: 96
   };
 
+  /* The club's type: Anton for the display lines, Poppins for everything that
+     has to be read, Montserrat for the wordmark. */
   var FONTS = {
-    script: '"Caveat", "Bradley Hand", "Segoe Script", cursive',
-    day: '"Anton", "Haettenschweiler", "Arial Narrow", sans-serif',
+    display: '"Anton", "Haettenschweiler", "Arial Narrow", sans-serif',
     body: '"Poppins", "Century Gothic", system-ui, sans-serif',
-    logo: '"Archivo Black", "Poppins", system-ui, sans-serif'
+    logo: '"Montserrat", "Poppins", system-ui, sans-serif'
   };
 
   var COLORS = {
@@ -52,13 +59,14 @@
       return Promise.resolve();
     }
     var specs = [
-      '700 132px "Caveat"',
+      '400 156px "Anton"',
       '400 88px "Anton"',
+      '400 46px "Anton"',
       '300 34px "Poppins"',
       '400 32px "Poppins"',
-      'italic 700 26px "Poppins"',
-      '700 30px "Poppins"',
-      '400 46px "Archivo Black"'
+      'italic 400 32px "Poppins"',
+      '700 46px "Montserrat"',
+      '800 46px "Montserrat"'
     ];
     return Promise.all(specs.map(function (spec) {
       return document.fonts.load(spec).catch(function () { return null; });
@@ -82,52 +90,80 @@
     return out;
   }
 
-  /* Scale the handwritten title so it fills the page like the printed layouts:
-     short titles grow, long ones shrink, and it never overflows the margins. */
-  function fitTitleSize(ctx, text, maxWidth) {
-    if (!text) return T.titleMinSize;
-    ctx.font = '700 100px ' + FONTS.script;
-    var widthAt100 = ctx.measureText(text).width;
-    if (!widthAt100) return T.titleMinSize;
+  function widestLine(ctx, lines) {
+    return lines.reduce(function (widest, line) {
+      return Math.max(widest, ctx.measureText(line).width);
+    }, 0);
+  }
 
-    var ideal = 100 * (maxWidth * T.titleFill) / widthAt100;
-    var size = Math.max(T.titleMinSize, Math.min(T.titleMaxSize, ideal));
-
-    // Guard against a family whose metrics differ from the measurement above.
+  /* Set the title as large as it goes: keep the display size and let a long
+     title stack onto a second line, only shrinking once it needs a third one —
+     or once a full week leaves it less room than maxHeight. */
+  function fitTitle(ctx, text, maxWidth, maxHeight) {
+    var size = T.titleMaxSize;
+    var lines = [text];
     while (size > T.titleMinSize) {
-      ctx.font = '700 ' + size + 'px ' + FONTS.script;
-      if (ctx.measureText(text).width <= maxWidth) break;
+      ctx.font = '400 ' + size + 'px ' + FONTS.display;
+      lines = wrap(ctx, text, maxWidth);
+      if (lines.length <= T.titleMaxLines
+          && widestLine(ctx, lines) <= maxWidth
+          && lines.length * size * T.titleLead <= maxHeight) break;
       size -= 2;
     }
-    return size;
+    return { size: size, lines: lines, height: lines.length * size * T.titleLead };
+  }
+
+  /* Row type sizes, all scaled together: a week with five runs in it sets a
+     little smaller rather than running into the logo. */
+  function rowType(scale) {
+    return {
+      scale: scale,
+      daySize: T.daySize * scale,
+      nameSize: T.nameSize * scale,
+      metaSize: T.metaSize * scale,
+      noteSize: T.noteSize * scale,
+      dateSize: T.dateSize * scale,
+      textTop: T.rowTextTop * scale,
+      nameGap: T.nameGap * scale,
+      lineGap: T.lineGap * scale,
+      noteGap: T.noteGap * scale,
+      noteLead: 16 * scale
+    };
+  }
+
+  function blockHeight(measured) {
+    return measured.reduce(function (sum, m) { return sum + m.height; }, 0);
   }
 
   /* Measure a row without drawing, so rows can be spaced evenly and nothing
      collides: the date reserves its real width, the day label its own column. */
-  function measureRow(ctx, row) {
+  function measureRow(ctx, row, type) {
     // Date column: measure it, then keep the title clear of it.
-    ctx.font = '700 ' + T.dateSize + 'px ' + FONTS.body;
+    ctx.font = '400 ' + type.dateSize + 'px ' + FONTS.body;
     var dateWidth = row.date ? ctx.measureText(row.date).width : 0;
     var nameWidth = T.rightX - T.colX - (dateWidth ? dateWidth + 28 : 0);
     var noteWidth = T.rightX - T.colX - 40;
 
     // Day label: shrink to fit its own column rather than run under the text.
-    var daySize = T.daySize;
+    var daySize = type.daySize;
+    var dayFloor = 34 * type.scale;
     var dayRoom = T.colX - T.dayX - 22;
-    while (daySize > 34) {
-      ctx.font = '400 ' + daySize + 'px ' + FONTS.day;
+    while (daySize > dayFloor) {
+      ctx.font = '400 ' + daySize + 'px ' + FONTS.display;
       if (ctx.measureText(row.day).width <= dayRoom) break;
       daySize -= 2;
     }
 
-    ctx.font = '300 ' + T.nameSize + 'px ' + FONTS.body;
+    ctx.font = '400 ' + type.nameSize + 'px ' + FONTS.display;
     var nameLines = wrap(ctx, row.title, nameWidth);
-    ctx.font = 'italic 700 ' + T.noteSize + 'px ' + FONTS.body;
-    var noteLines = row.note ? wrap(ctx, row.note.toUpperCase(), noteWidth) : [];
+    ctx.font = '400 ' + type.noteSize + 'px ' + FONTS.body;
+    var noteLines = row.note ? wrap(ctx, row.note, noteWidth) : [];
 
-    var height = nameLines.length * T.lineGap + 2 * T.lineGap;   // name + time + location
-    if (noteLines.length) height += 16 + noteLines.length * T.noteGap;
+    // name + time + location
+    var height = nameLines.length * type.nameGap + 2 * type.lineGap;
+    if (noteLines.length) height += type.noteLead + noteLines.length * type.noteGap;
     return {
+      type: type,
       nameLines: nameLines,
       noteLines: noteLines,
       daySize: daySize,
@@ -136,50 +172,53 @@
   }
 
   function drawRow(ctx, row, y, measured) {
+    var type = measured.type;
+
     // Day label, e.g. TUE
     ctx.fillStyle = COLORS.ink;
     ctx.textAlign = 'left';
-    ctx.font = '400 ' + measured.daySize + 'px ' + FONTS.day;
+    ctx.font = '400 ' + measured.daySize + 'px ' + FONTS.display;
     ctx.fillText(row.day, T.dayX, y + measured.daySize * 0.78);
 
-    var cursor = y + 34;
+    var cursor = y + type.textTop;
 
-    // Event name
-    ctx.fillStyle = COLORS.body;
-    ctx.font = '300 ' + T.nameSize + 'px ' + FONTS.body;
+    // Event name, in the display face
+    ctx.fillStyle = COLORS.ink;
+    ctx.font = '400 ' + type.nameSize + 'px ' + FONTS.display;
     measured.nameLines.forEach(function (line) {
       ctx.fillText(line, T.colX, cursor);
-      cursor += T.lineGap;
+      cursor += type.nameGap;
     });
 
     // Date, aligned to the right of the first line
     if (row.date) {
       ctx.textAlign = 'right';
       ctx.fillStyle = COLORS.ink;
-      ctx.font = '700 ' + T.dateSize + 'px ' + FONTS.body;
-      ctx.fillText(row.date, T.rightX, y + 34);
+      ctx.font = '400 ' + type.dateSize + 'px ' + FONTS.body;
+      ctx.fillText(row.date, T.rightX, y + type.textTop);
       ctx.textAlign = 'left';
     }
 
-    // Time / Location, grey label + darker value
-    [['Time: ', row.time], ['Location: ', row.location]].forEach(function (pair) {
-      ctx.font = '300 ' + T.metaSize + 'px ' + FONTS.body;
+    // Time / Location, grey label + darker value; the meeting place is italic.
+    [['Time: ', row.time, ''], ['Location: ', row.location, 'italic ']].forEach(function (pair) {
+      ctx.font = '400 ' + type.metaSize + 'px ' + FONTS.body;
       ctx.fillStyle = COLORS.label;
       ctx.fillText(pair[0], T.colX, cursor);
       var offset = ctx.measureText(pair[0]).width;
+      ctx.font = pair[2] + '400 ' + type.metaSize + 'px ' + FONTS.body;
       ctx.fillStyle = COLORS.body;
       ctx.fillText(pair[1] || '', T.colX + offset, cursor);
-      cursor += T.lineGap;
+      cursor += type.lineGap;
     });
 
-    // Note, bold italic caps
+    // Note, as written
     if (measured.noteLines.length) {
-      cursor += 16;
-      ctx.font = 'italic 700 ' + T.noteSize + 'px ' + FONTS.body;
+      cursor += type.noteLead;
+      ctx.font = '400 ' + type.noteSize + 'px ' + FONTS.body;
       ctx.fillStyle = COLORS.ink;
       measured.noteLines.forEach(function (line) {
         ctx.fillText(line, T.colX, cursor);
-        cursor += T.noteGap;
+        cursor += type.noteGap;
       });
     }
   }
@@ -208,8 +247,12 @@
 
     // Wordmark: L X RUNNING / COMMUNITY.  (the X and the full stop are red)
     var size = LOGO_SIZE;
-    ctx.font = '400 ' + size + 'px ' + FONTS.logo;
+    ctx.font = '800 ' + size + 'px ' + FONTS.logo;
     ctx.textAlign = 'left';
+    // Tracking, where the browser supports it — measureText follows it, so the
+    // centring below stays right either way.
+    var tracking = ctx.letterSpacing;
+    ctx.letterSpacing = '2px';
 
     var top = [
       { text: 'L', color: COLORS.ink },
@@ -234,7 +277,10 @@
     }
 
     render(top, baseline - size - LOGO_LEAD);
+    ctx.font = '700 ' + size + 'px ' + FONTS.logo;
     render(bottom, baseline);
+
+    ctx.letterSpacing = tracking || '0px';
   }
 
   /* rows: [{day,title,time,location,note,date}] */
@@ -247,52 +293,72 @@
     ctx.fillRect(0, 0, W, H);
     ctx.textBaseline = 'alphabetic';
 
-    // --- Handwritten title
-    var title = poster.title || 'week schedule';
-    var titleSize = fitTitleSize(ctx, title, W - T.marginX * 2);
-    ctx.font = '700 ' + titleSize + 'px ' + FONTS.script;
+    var rows = poster.rows || [];
+    var maxWidth = W - T.marginX * 2;
+    var footerTop = H - T.footerBottom - logoHeight(logoImage) - 56;
+
+    // --- Work out the sizes before drawing anything, so a full week is set
+    //     smaller instead of running into the week note or the logo.
+    ctx.font = 'italic 400 ' + T.headerNoteSize + 'px ' + FONTS.body;
+    var headerLines = poster.headerNote ? wrap(ctx, poster.headerNote, maxWidth - 120) : [];
+    var headerHeight = headerLines.length ? headerLines.length * T.headerNoteGap + 44 : 0;
+
+    var tightGaps = T.rowGapTight * Math.max(0, rows.length - 1);
+    var measured = rows.map(function (row) { return measureRow(ctx, row, rowType(1)); });
+
+    // The rows are served first; whatever is left is the title's to fill.
+    var titleRoom = footerTop - T.titleTop - T.titleGap - headerHeight
+                  - blockHeight(measured) - tightGaps;
+    var title = String(poster.title || 'week schedule').toUpperCase();
+    var fitted = fitTitle(ctx, title, maxWidth, titleRoom);
+
+    var contentTop = T.titleTop + fitted.height + T.titleGap + headerHeight;
+
+    // Still too tall — the title is already at its floor, so shrink the rows.
+    var scale = 1;
+    while (scale > T.rowMinScale
+           && contentTop + blockHeight(measured) + tightGaps > footerTop) {
+      scale -= 0.04;
+      measured = rows.map(function (row) { return measureRow(ctx, row, rowType(scale)); });
+    }
+
+    // --- Display title
+    ctx.font = '400 ' + fitted.size + 'px ' + FONTS.display;
     ctx.fillStyle = COLORS.red;
     ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, T.titleTop + titleSize * 0.72);
-
-    var contentTop = T.titleTop + titleSize + 96;
+    var titleBaseline = T.titleTop + fitted.size * 0.76;
+    fitted.lines.forEach(function (line) {
+      ctx.fillText(line, W / 2, titleBaseline);
+      titleBaseline += fitted.size * T.titleLead;
+    });
 
     // --- Optional week-wide note under the title
-    if (poster.headerNote) {
-      ctx.font = 'italic 700 ' + T.headerNoteSize + 'px ' + FONTS.body;
+    if (headerLines.length) {
+      ctx.font = 'italic 400 ' + T.headerNoteSize + 'px ' + FONTS.body;
       ctx.fillStyle = COLORS.ink;
-      ctx.textAlign = 'center';
-      wrap(ctx, poster.headerNote.toUpperCase(), W - T.marginX * 2 - 120).forEach(function (line) {
-        ctx.fillText(line, W / 2, contentTop);
-        contentTop += 36;
+      var noteY = T.titleTop + fitted.height + T.titleGap;
+      headerLines.forEach(function (line) {
+        ctx.fillText(line, W / 2, noteY);
+        noteY += T.headerNoteGap;
       });
-      contentTop += 48;
     }
 
     ctx.textAlign = 'left';
 
-    // --- Rows, spread evenly through the available space
-    var rows = poster.rows || [];
-    var measured = rows.map(function (row) { return measureRow(ctx, row); });
-    var totalHeight = measured.reduce(function (sum, m) { return sum + m.height; }, 0);
-    var footerTop = H - T.footerBottom - logoHeight(logoImage) - 56;
+    // --- Rows, spread through whatever room is left
+    var totalHeight = blockHeight(measured);
     var space = footerTop - contentTop - totalHeight;
+    // Whatever room is left is shared between the rows: the shrinking above
+    // aims for rowGapTight, but a week that will not shrink that far closes the
+    // gaps rather than running past the logo.
     var gap = rows.length > 1
-      ? Math.max(T.rowGapMin, Math.min(T.rowGapMax, space / (rows.length - 1)))
+      ? Math.max(0, Math.min(T.rowGapMax, space / (rows.length - 1)))
       : 0;
 
-    // A very full week may still not fit: tighten the gaps, then start higher,
-    // so the schedule never runs into the logo.
-    var y = contentTop;
-    var needed = totalHeight + gap * Math.max(0, rows.length - 1);
-    if (y + needed > footerTop && rows.length > 1) {
-      gap = Math.max(24, (footerTop - contentTop - totalHeight) / (rows.length - 1));
-      needed = totalHeight + gap * (rows.length - 1);
-    }
-    if (y + needed > footerTop) {
-      y = Math.max(T.titleTop + titleSize * 0.9, footerTop - needed);
-    }
-
+    // Room to spare (a short week): sit the block between title and logo
+    // rather than leaving all of the air at the bottom.
+    var leftover = space - gap * Math.max(0, rows.length - 1);
+    var y = contentTop + Math.max(0, leftover) / 2;
     rows.forEach(function (row, i) {
       drawRow(ctx, row, y, measured[i]);
       y += measured[i].height + gap;
