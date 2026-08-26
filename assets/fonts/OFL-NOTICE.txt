@@ -1,16 +1,22 @@
 Fonts bundled with this site
 ===========================
 
-Anton       — Copyright the Anton Project Authors
-Montserrat  — Copyright the Montserrat Project Authors (Julieta Ulanovsky)
-Poppins     — Copyright the Poppins Project Authors (Indian Type Foundry, Jonny Pinhorn)
+Anton          — Copyright the Anton Project Authors
+Montserrat     — Copyright the Montserrat Project Authors (Julieta Ulanovsky)
+Poppins        — Copyright the Poppins Project Authors (Indian Type Foundry, Jonny Pinhorn)
+Reenie Beanie  — Copyright the Reenie Beanie Project Authors (James Grieshaber)
 
-All three families are licensed under the SIL Open Font License, Version 1.1,
+All four families are licensed under the SIL Open Font License, Version 1.1,
 which permits bundling and redistribution with this site.
 
 Licence text: https://openfontlicense.org/open-font-license-official-text/
 Source:       https://fonts.google.com (woff2 subsets: latin, latin-ext)
 
-The fonts are unmodified; only the latin and latin-ext subsets are included.
-Montserrat is the variable file Google Fonts serves, one per subset, with the
-weight axis pinned by each @font-face rule.
+The fonts are unmodified; only the latin and latin-ext subsets are included
+(Reenie Beanie is published as latin only). Montserrat is the variable file
+Google Fonts serves, one per subset, with the weight axis pinned by each
+@font-face rule.
+
+Ekran and Cygre — the two other faces the graphic asks for — are NOT bundled:
+they are not open-licensed, so no font file for them is kept in this
+repository. See README.md in this folder.

@@ -114,11 +114,18 @@ cannot post them for you. What it does instead:
   `localStorage` — nothing is uploaded anywhere, and there are no third-party
   requests. Use **Export all weeks** to move your data to another device or to
   keep a backup.
-- **The fonts are bundled** in `assets/fonts/` rather than loaded from a font
-  CDN, so the graphic always renders with the right typefaces: Anton for the
-  week title and the day labels, Poppins for the dates, times, meeting points
-  and notes, and Montserrat for the wordmark. All three are licensed under the
-  SIL Open Font License — see `assets/fonts/OFL-NOTICE.txt`.
+- **The fonts** are served from `assets/fonts/` rather than from a font CDN, so
+  the graphic renders the same everywhere and the page makes no third-party
+  requests. The graphic is set in Reenie Beanie (the *week schedule* title),
+  Ekran (the day labels), Cygre (run headlines, dates, times, locations and
+  notes) and Montserrat (the wordmark).
+
+  Reenie Beanie and Montserrat are bundled under the SIL Open Font License.
+  **Ekran and Cygre are not** — they are licensed faces, so no font file for
+  them is kept here. They are picked up from the machine if they are installed,
+  or from files you drop into `assets/fonts/`; until then those parts fall back
+  to Anton and Poppins. `assets/fonts/README.md` has the file names, the sizes
+  the graphic uses, and how to convert a `.ttf` to `woff2`.
 - **Your own logo** can be dropped in under *Club logo & saved weeks*; without
   one, the wordmark is drawn.
 
