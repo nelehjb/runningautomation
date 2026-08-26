@@ -1,15 +1,16 @@
 Fonts bundled with this site
 ===========================
 
-Anton          — Copyright the Anton Project Authors
-Archivo Black  — Copyright the Archivo Project Authors (Omnibus-Type)
-Caveat         — Copyright the Caveat Project Authors (Impallari Type)
-Poppins        — Copyright the Poppins Project Authors (Indian Type Foundry, Jonny Pinhorn)
+Anton       — Copyright the Anton Project Authors
+Montserrat  — Copyright the Montserrat Project Authors (Julieta Ulanovsky)
+Poppins     — Copyright the Poppins Project Authors (Indian Type Foundry, Jonny Pinhorn)
 
-All four families are licensed under the SIL Open Font License, Version 1.1,
+All three families are licensed under the SIL Open Font License, Version 1.1,
 which permits bundling and redistribution with this site.
 
 Licence text: https://openfontlicense.org/open-font-license-official-text/
 Source:       https://fonts.google.com (woff2 subsets: latin, latin-ext)
 
 The fonts are unmodified; only the latin and latin-ext subsets are included.
+Montserrat is the variable file Google Fonts serves, one per subset, with the
+weight axis pinned by each @font-face rule.

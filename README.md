@@ -115,8 +115,10 @@ cannot post them for you. What it does instead:
   requests. Use **Export all weeks** to move your data to another device or to
   keep a backup.
 - **The fonts are bundled** in `assets/fonts/` rather than loaded from a font
-  CDN, so the graphic always renders with the right typefaces. All four are
-  licensed under the SIL Open Font License — see `assets/fonts/OFL-NOTICE.txt`.
+  CDN, so the graphic always renders with the right typefaces: Anton for the
+  week title and the day labels, Poppins for the dates, times, meeting points
+  and notes, and Montserrat for the wordmark. All three are licensed under the
+  SIL Open Font License — see `assets/fonts/OFL-NOTICE.txt`.
 - **Your own logo** can be dropped in under *Club logo & saved weeks*; without
   one, the wordmark is drawn.
 
