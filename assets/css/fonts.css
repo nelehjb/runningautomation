@@ -6,14 +6,92 @@
    would silently change the artwork) and so the page makes no third-party
    requests.
 
-   The graphic uses three families:
-     Anton       — the week title and the day labels
-     Poppins     — dates, times, locations and notes
-     Montserrat  — the LX RUNNING COMMUNITY wordmark
+   The graphic is set in four families:
+     Reenie Beanie — the handwritten "week schedule" title
+     Ekran         — the day labels (TUE / THU / SUN)
+     Cygre         — run headlines, dates, times, locations and notes
+     Montserrat    — the LX RUNNING COMMUNITY wordmark
 
-   All three are licensed under the SIL Open Font License 1.1 — see
-   assets/fonts/OFL-NOTICE.txt.
+   Reenie Beanie and Montserrat are bundled here under the SIL Open Font
+   License 1.1 (see assets/fonts/OFL-NOTICE.txt), as are Anton and Poppins,
+   which the page interface uses and which stand in for Ekran and Cygre.
+
+   Ekran and Cygre are not open-licensed, so no font file for them is kept in
+   this repository.  The rules for them below take the font from the machine if
+   it is installed, otherwise from a file placed in assets/fonts/ — see
+   assets/fonts/README.md for the file names.  Until one of the two is there
+   the graphic falls back to Anton and Poppins rather than breaking.
    ========================================================================== */
+
+
+/* --- Reenie Beanie — the "week schedule" title ---------------------------- */
+
+@font-face {
+  font-family: 'Reenie Beanie';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/reenie-beanie-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+/* --- Ekran — the day labels ----------------------------------------------
+   Licensed font, not bundled: taken from the machine, or from a file you add
+   at assets/fonts/ekran-400.woff2.  Nothing breaks while it is missing.
+   ------------------------------------------------------------------------ */
+
+@font-face {
+  font-family: 'Ekran';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Ekran'), local('Ekran Bold'), local('Ekran-Bold'),
+       url('../fonts/ekran-400.woff2') format('woff2');
+}
+
+
+/* --- Cygre — run headlines, dates, times, locations and notes -------------
+   Licensed font, not bundled, in the same way as Ekran.  Four faces are used:
+   Light for the headlines and the meta lines, Black for the dates, and
+   SemiBold (upright and italic) for the note lines.
+   ------------------------------------------------------------------------ */
+
+@font-face {
+  font-family: 'Cygre';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: local('Cygre Light'), local('Cygre-Light'), local('CygreLight'),
+       url('../fonts/cygre-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cygre';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cygre SemiBold'), local('Cygre-SemiBold'), local('CygreSemiBold'),
+       url('../fonts/cygre-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cygre';
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cygre SemiBold Italic'), local('Cygre-SemiBoldItalic'), local('CygreSemiBoldItalic'),
+       url('../fonts/cygre-600-italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cygre';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: local('Cygre Black'), local('Cygre-Black'), local('CygreBlack'),
+       url('../fonts/cygre-900.woff2') format('woff2');
+}
 
 
 @font-face {
