@@ -1,0 +1,513 @@
+/* =============================================================================
+   app.css — mobile first. Layout grows into a two-column desktop view at 900px.
+   ========================================================================== */
+
+/* --- Tokens ---------------------------------------------------------------- */
+:root {
+  --red: #EA3B1F;
+  --red-ink: #C62F16;
+  --bg: #FAFAFA;
+  --surface: #FFFFFF;
+  --surface-2: #F4F4F5;
+  --border: #E4E4E7;
+  --text: #18181B;
+  --text-2: #52525B;
+  --text-3: #8A8A93;
+  --danger: #B42318;
+
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+
+  --shadow: 0 1px 2px rgba(16, 16, 20, .06), 0 6px 18px rgba(16, 16, 20, .05);
+  --tap: 48px;                       /* minimum comfortable touch target */
+
+  --appbar-h: 116px;
+  --tabbar-h: calc(60px + env(safe-area-inset-bottom));
+
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B0B0C;
+    --surface: #151517;
+    --surface-2: #1D1D20;
+    --border: #2A2A2E;
+    --text: #F4F4F5;
+    --text-2: #B4B4BB;
+    --text-3: #86868E;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35);
+    --danger: #F97066;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0B0B0C;
+  --surface: #151517;
+  --surface-2: #1D1D20;
+  --border: #2A2A2E;
+  --text: #F4F4F5;
+  --text-2: #B4B4BB;
+  --text-3: #86868E;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35);
+  --danger: #F97066;
+}
+
+/* --- Base ------------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, p, figure { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+:where(a) { color: var(--red-ink); }
+
+:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--red); color: #fff; padding: 12px 16px;
+  border-radius: 0 0 var(--r-sm) 0; text-decoration: none;
+}
+.skip-link:focus { left: 0; }
+
+/* --- App bar ---------------------------------------------------------------- */
+.appbar {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(1.6) blur(12px);
+  -webkit-backdrop-filter: saturate(1.6) blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: max(8px, env(safe-area-inset-top)) 16px 8px;
+}
+
+.appbar__row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; min-height: 44px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+.brand__mark {
+  display: grid; place-items: center;
+  width: 34px; height: 34px; flex: none;
+  background: var(--red); color: #fff;
+  border-radius: 9px;
+  font-weight: 800; font-size: 14px; letter-spacing: .02em;
+}
+
+.brand__text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.brand__text strong { font-size: 15px; font-weight: 700; }
+.brand__text small { font-size: 11px; color: var(--text-3); letter-spacing: .04em; text-transform: uppercase; }
+
+.icon-btn {
+  min-width: var(--tap); min-height: var(--tap);
+  display: grid; place-items: center;
+  background: transparent; border: 1px solid transparent;
+  border-radius: var(--r-md); cursor: pointer;
+  font-size: 22px; color: var(--text-2);
+  transition: background .15s ease, color .15s ease;
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.icon-btn:active { transform: scale(.96); }
+
+/* --- Week switcher ---------------------------------------------------------- */
+.weekbar {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 4px;
+}
+
+.weekbar__center { flex: 1; min-width: 0; text-align: center; }
+.weekbar__label { display: block; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--text-3); }
+
+.weekbar__input {
+  width: 100%; max-width: 220px;
+  background: transparent; border: 0;
+  text-align: center; font-weight: 600; font-size: 15px;
+  padding: 2px 0; cursor: pointer;
+}
+.weekbar__input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .55; }
+
+.weekbar__range { font-size: 12px; color: var(--text-3); }
+
+/* --- Layout ----------------------------------------------------------------- */
+.main {
+  padding: 20px 16px calc(var(--tabbar-h) + 84px);
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.panel { display: none; }
+.panel.is-active { display: block; animation: fade .18s ease both; }
+
+/* Opacity only, deliberately: animating transform would leave an identity
+   matrix on the panel and turn it into the containing block for the fixed
+   .sticky-actions bar, dropping it behind the tab bar. */
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.panel__head { margin-bottom: 18px; }
+.panel__title { font-size: clamp(22px, 6vw, 28px); font-weight: 700; letter-spacing: -.02em; }
+.panel__hint { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+
+.stack { display: flex; flex-direction: column; gap: 12px; }
+
+/* Direct children of a panel need their own rhythm (they are not in a .stack) */
+.panel > .card + .field,
+.panel > .field + .card,
+.panel > .card,
+.panel > .field { margin-top: 16px; }
+.panel > .panel__head + * { margin-top: 0; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.rule { border: 0; border-top: 1px solid var(--border); margin: 4px 0; }
+
+/* --- Cards ------------------------------------------------------------------ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card--soft { box-shadow: none; margin-top: 12px; }
+.card__body { padding: 16px; }
+
+.summary {
+  list-style: none; cursor: pointer;
+  padding: 14px 16px; min-height: var(--tap);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 600; color: var(--text-2);
+}
+.summary::-webkit-details-marker { display: none; }
+.summary::after { content: "⌄"; font-size: 18px; line-height: 1; transition: transform .2s ease; }
+details[open] > .summary::after { transform: rotate(180deg); }
+.summary:hover { color: var(--text); }
+
+/* --- Slot cards -------------------------------------------------------------- */
+.slot__head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px 12px;
+}
+
+.slot__day {
+  flex: none;
+  display: grid; place-items: center;
+  min-width: 52px; padding: 6px 8px;
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  font-family: "Anton", var(--font);
+  font-size: 19px; letter-spacing: .04em;
+}
+
+.slot__headtext { flex: 1; min-width: 0; }
+.slot__title {
+  font-size: 15px; font-weight: 600; line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.slot__when { font-size: 13px; color: var(--text-3); margin-top: 2px; }
+
+.slot.is-off { opacity: .5; }
+.slot.is-off .slot__day { background: transparent; border: 1px dashed var(--border); }
+
+.slot__details { border-top: 1px solid var(--border); }
+
+/* --- Forms ------------------------------------------------------------------- */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field__label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.field__opt { font-weight: 400; color: var(--text-3); }
+.field__help { font-size: 12px; color: var(--text-3); }
+
+.input {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 16px;               /* 16px keeps iOS from zooming on focus */
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 18%, transparent);
+}
+textarea.input { min-height: 76px; resize: vertical; line-height: 1.55; }
+.input--mono {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 14px;
+}
+select.input { appearance: none; background-image: none; }
+
+/* --- Buttons ----------------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  min-height: var(--tap); padding: 12px 18px;
+  border-radius: var(--r-md); border: 1px solid transparent;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  cursor: pointer; white-space: nowrap;
+  transition: background .15s ease, border-color .15s ease, transform .1s ease;
+}
+.btn:active { transform: scale(.98); }
+
+.btn--primary { background: var(--red); color: #fff; }
+.btn--primary:hover { background: var(--red-ink); }
+
+.btn--ghost { background: var(--surface); border-color: var(--border); color: var(--text); }
+.btn--ghost:hover { background: var(--surface-2); }
+
+.btn--danger { background: transparent; border-color: transparent; color: var(--danger); }
+.btn--danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+.row-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.row-actions .btn { flex: 1 1 auto; }
+
+/* --- Switch ------------------------------------------------------------------ */
+.switch {
+  display: flex; align-items: center; gap: 10px;
+  min-height: var(--tap); cursor: pointer;
+  font-size: 14px; color: var(--text-2);
+}
+.switch--compact { min-height: auto; }
+.switch input {
+  appearance: none; flex: none;
+  width: 46px; height: 28px;
+  background: var(--border); border-radius: 999px;
+  position: relative; cursor: pointer;
+  transition: background .18s ease;
+}
+.switch input::after {
+  content: ""; position: absolute; top: 3px; left: 3px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  transition: transform .18s ease;
+}
+.switch input:checked { background: var(--red); }
+.switch input:checked::after { transform: translateX(18px); }
+
+/* --- Segmented control -------------------------------------------------------- */
+.segmented {
+  display: flex; gap: 4px; padding: 4px;
+  background: var(--surface-2); border-radius: var(--r-md);
+  margin-bottom: 14px;
+}
+.segmented__btn {
+  flex: 1; min-height: 42px; border: 0; cursor: pointer;
+  background: transparent; border-radius: var(--r-sm);
+  font-size: 14px; font-weight: 600; color: var(--text-2);
+  transition: background .15s ease, color .15s ease;
+}
+.segmented__btn.is-on { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
+/* --- Poster ------------------------------------------------------------------- */
+.poster-wrap {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px;
+  display: grid; place-items: center;
+}
+#posterCanvas {
+  width: 100%; height: auto; max-width: 460px;
+  aspect-ratio: 1080 / 1350;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+
+/* --- Caption ------------------------------------------------------------------- */
+.caption-preview__label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-3); margin-bottom: 6px;
+}
+.caption-preview {
+  font-size: 14px; line-height: 1.5;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.caption-preview::after { content: "… more"; color: var(--text-3); }
+
+.counter { font-size: 12px; color: var(--text-3); text-align: right; margin-top: 6px; }
+.counter.is-over { color: var(--danger); font-weight: 600; }
+
+/* --- Strava --------------------------------------------------------------------- */
+.note {
+  background: color-mix(in srgb, var(--red) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--red) 22%, var(--border));
+  border-radius: var(--r-md);
+  padding: 14px 16px; margin-bottom: 16px;
+  font-size: 13px; line-height: 1.55; color: var(--text-2);
+}
+.note strong { color: var(--text); }
+
+.ev__head { padding: 14px 16px; display: flex; align-items: baseline; gap: 10px; }
+.ev__title { font-size: 15px; font-weight: 700; flex: 1; overflow-wrap: anywhere; }
+.ev__date { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+
+.ev__fields { border-top: 1px solid var(--border); }
+.ev__field {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.ev__field:last-child { border-bottom: 0; }
+.ev__key {
+  flex: none; width: 86px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--text-3); padding-top: 3px;
+}
+.ev__val { flex: 1; min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.ev__val a { overflow-wrap: anywhere; }
+
+/* --- Sticky action bar ----------------------------------------------------------- */
+.sticky-actions {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: var(--tabbar-h);
+  z-index: 15;
+  display: flex; gap: 10px;
+  padding: 10px 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+}
+.sticky-actions .btn { flex: 1; }
+
+.panel:not(.is-active) .sticky-actions { display: none; }
+
+/* --- Tab bar ---------------------------------------------------------------------- */
+.tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 25;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tabbar__btn {
+  min-height: 60px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; border: 0; background: transparent; cursor: pointer;
+  color: var(--text-3);
+  transition: color .15s ease;
+}
+.tabbar__icon { width: 22px; height: 22px; display: block; flex: none; }
+.tabbar__text { font-size: 11px; font-weight: 600; letter-spacing: .01em; }
+.tabbar__btn.is-on { color: var(--red); }
+.tabbar__btn:hover { color: var(--text); }
+.tabbar__btn.is-on:hover { color: var(--red); }
+
+/* Frosted bars rely on backdrop-filter; without it, page text would show
+   through them. Fall back to an opaque background. */
+@supports not ((backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))) {
+  .appbar, .tabbar, .sticky-actions { background: var(--surface); }
+}
+
+/* --- Toast -------------------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%; transform: translate(-50%, 20px);
+  bottom: calc(var(--tabbar-h) + 76px);
+  z-index: 40;
+  max-width: calc(100vw - 32px);
+  padding: 12px 20px;
+  background: var(--text); color: var(--bg);
+  border-radius: 999px;
+  font-size: 14px; font-weight: 600;
+  box-shadow: 0 8px 28px rgba(0,0,0,.22);
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* --- Desktop ------------------------------------------------------------------------ */
+@media (min-width: 900px) {
+  :root { --tabbar-h: 0px; }
+
+  /* The sidebar offset lives on <body>; the sticky app bar sits inside it and
+     must not add the offset a second time. */
+  body { padding-left: 232px; }
+
+  /* Line the bar up with the content column below it. */
+  .appbar__row, .weekbar { max-width: 780px; margin-inline: auto; }
+
+  /* Keep the arrows next to the date rather than at opposite ends of the bar. */
+  .weekbar { justify-content: center; gap: 2px; }
+  .weekbar__center { flex: 0 1 280px; }
+
+  .tabbar {
+    top: 0; bottom: 0; right: auto;
+    width: 232px;
+    grid-template-columns: 1fr;
+    grid-auto-rows: max-content;
+    align-content: start;
+    gap: 4px;
+    padding: 96px 12px 0;
+    border-top: 0; border-right: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .tabbar__btn {
+    flex-direction: row; justify-content: flex-start;
+    gap: 12px; padding: 0 14px; min-height: 46px;
+    border-radius: var(--r-md);
+  }
+  .tabbar__text { font-size: 14px; }
+  .tabbar__btn.is-on { background: color-mix(in srgb, var(--red) 10%, transparent); }
+
+  .main { padding: 28px 32px 140px; max-width: 780px; }
+
+  .sticky-actions {
+    left: 232px;
+    justify-content: flex-end;
+    padding: 12px 32px;
+  }
+  .sticky-actions .btn { flex: 0 0 auto; min-width: 160px; }
+
+  .toast { bottom: 96px; left: calc(50% + 116px); }
+
+  #posterCanvas { max-width: 520px; }
+}
+
+@media (min-width: 1180px) {
+  .main { max-width: 900px; }
+}
+
+/* --- Print / paper fallback ----------------------------------------------------------- */
+@media print {
+  .appbar, .tabbar, .sticky-actions, .toast { display: none !important; }
+  .main { padding: 0; }
+}
